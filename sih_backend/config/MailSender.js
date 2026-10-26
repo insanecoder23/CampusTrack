@@ -13,13 +13,26 @@ const transporter = nodemailer.createTransport({
 
 const mailSender = async (email, title, body) => {
   try {
-    const info = await transporter.sendMail({
-      from: `"Faizan Student" <${process.env.MAIL_USER}>`,
-      to: email,
-      subject: title,
-      html: body,
+    const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "api-key": process.env.BREVO_API_KEY,
+        "Content-Type": "application/json",
+        accept: "application/json",
+      },
+      body: JSON.stringify({
+        sender: { name: "Faizan Student", email: process.env.MAIL_FROM },
+        to: [{ email }],
+        subject: title,
+        htmlContent: body,
+      }),
+      signal: AbortSignal.timeout(15000), // fail after 15s instead of hanging
     });
-    return info;
+
+    if (!res.ok) {
+      throw new Error(`Brevo ${res.status}: ${await res.text()}`);
+    }
+    return await res.json();
   } catch (error) {
     console.error("Mail error:", error.message);
     throw error;

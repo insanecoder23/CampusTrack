@@ -55,7 +55,7 @@ export const RegisterDialog = ({ isOpen, onClose, type, onRegister }: RegisterDi
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/v1/signup",
+        "https://campustracks.onrender.com/api/v1/signup",
         {
           email: formData.email,
           password: formData.password,

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
-const API = "http://localhost:3000/api/v1";
+const API = "https://campustracks.onrender.com/api/v1";
 
 export const ForgotPassword = () => {
   const [step, setStep] = useState<1 | 2 | 3>(1);

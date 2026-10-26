@@ -143,7 +143,7 @@ export const TeacherDashboard = ({ user }: TeacherDashboardProps) => {
   const generateTeacherCode = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/v1/createteachercode",
+        "https://campustracks.onrender.com/createteachercode",
         { headcount },
         { withCredentials: true }
       );
@@ -171,7 +171,7 @@ export const TeacherDashboard = ({ user }: TeacherDashboardProps) => {
 
   const getdetailes = async function () {
     try {
-      const response = await axios.get("http://localhost:3000/api/v1/getattendance", {
+      const response = await axios.get("https://campustracks.onrender.com/getattendance", {
         withCredentials: true,
       });
       setdetailes(response.data?.data || []);

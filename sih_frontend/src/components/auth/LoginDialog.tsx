@@ -34,7 +34,7 @@ export const LoginDialog = ({ isOpen, onClose, type, onLogin }: LoginDialogProps
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/v1/login",
+        "https://campustracks.onrender.com/api/v1/login",
         {
           email: formData.email,
           password: formData.password,

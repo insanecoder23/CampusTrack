@@ -38,7 +38,7 @@ export const Contact = () => {
       setLoading(true);
       setStatusMsg("");
 
-const res = await axios.post("http://localhost:3000/api/v1/query", submitQuery);
+const res = await axios.post("https://campustracks.onrender.com/api/v1/submitquery", submitQuery);
       setStatusMsg("Message sent successfully!");
       setSubmitQuery({
          firstName: "",

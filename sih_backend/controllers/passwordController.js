@@ -7,12 +7,10 @@ const mailSender = require("../config/MailSender");
 
 exports.forgotPassword = async (req, res) => {
   try {
-    console.log("body:", req.body);
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: "Email required" });
 
     const user = await User.findOne({ email });
-    console.log("user found:", !!user, "| email received: [" + email + "]");
 
     if (user) {
       const otp = randomInt(100000, 1000000).toString();
@@ -28,14 +26,15 @@ exports.forgotPassword = async (req, res) => {
         },
         { upsert: true }
       );
-      console.log("reset record saved");
 
-      const info = await mailSender(
+      // no await: the email sends in the background
+      mailSender(
         email,
         "Your password reset OTP",
         `<p>Your OTP is <b style="font-size:20px">${otp}</b>. It expires in 10 minutes.</p>`
-      );
-      console.log("mail result:", info);
+      )
+        .then(() => console.log("mail sent to", email))
+        .catch((err) => console.error("mail failed:", err.message));
     }
 
     res.json({ message: "If this email is registered, an OTP has been sent." });
@@ -44,7 +43,6 @@ exports.forgotPassword = async (req, res) => {
     res.status(500).json({ error: "Could not send OTP. Try again later." });
   }
 };
-
 exports.verifyOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
