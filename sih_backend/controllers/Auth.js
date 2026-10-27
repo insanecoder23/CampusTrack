@@ -110,24 +110,31 @@ exports.Login = async (req, res) => {
             });
         }
 
-    const token = jwt.sign(
-  { email: user.email, id: user._id, accounttype: user.accounttype },
-  process.env.JWT_SECRET,
-  { expiresIn: "2h" }
-);
+        const payload = {
+            email: user.email,
+            id: user._id,
+            accounttype: user.accounttype
+        };
 
-res.cookie("token", token, {
+        const token = jwt.sign(payload, process.env.JWT_SECRET, {
+            expiresIn: "2h"
+        });
+
+        const userResponse = user.toObject();
+        delete userResponse.password;
+
+        const option = {
+  expires: new Date(Date.now() + 2 * 60 * 60 * 1000), 
   httpOnly: true,
   secure: true,
   sameSite: "none",
-  maxAge: 2 * 60 * 60 * 1000,
-});
+};
 
-return res.status(200).json({
+return res.cookie("token", token, option).status(200).json({
   success: true,
-  token, // add this line if it's missing
-  user: { firstname: user.firstname, lastname: user.lastname, email: user.email, accounttype: user.accounttype },
+  token,
   message: "Login successful",
+  user: userResponse,   
 });
 
     } catch (error) {

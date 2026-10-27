@@ -40,13 +40,22 @@ export const LoginDialog = ({ isOpen, onClose, type, onLogin }: LoginDialogProps
     { withCredentials: true }
   );
 
-  const data = response.data;
-if (data.token) {
-  localStorage.setItem("token", data.token);
-} else {
-  console.warn("Login response has no token field, check the backend");
-}
-localStorage.setItem("user", JSON.stringify(data.user));
+const data = response.data;
+
+  if (!data.success) {
+    throw new Error(data.message);
+  }
+
+  if (!data.user) {
+    throw new Error("User data missing from response. Check backend.");
+  }
+
+  if (data.token) {
+    localStorage.setItem("token", data.token);
+  } else {
+    console.warn("Login response has no token field, check the backend");
+  }
+  localStorage.setItem("user", JSON.stringify(data.user));
 
   onLogin({ email: formData.email, type });
 
