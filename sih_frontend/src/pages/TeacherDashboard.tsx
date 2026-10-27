@@ -3,9 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import axios from 'axios';
+import axios from "axios";
 
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -20,18 +20,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { 
-  Users, 
+import {
+  Users,
   TrendingUp,
   AlertTriangle,
   CheckCircle,
   Edit3,
   QrCode,
   Clock,
-  Search
+  Search,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+
+const API_BASE = "https://campustracks.onrender.com/api/v1";
 
 interface TeacherDashboardProps {
   user?: {
@@ -39,7 +41,7 @@ interface TeacherDashboardProps {
     firstname: string;
     lastname: string;
     email: string;
-    type: 'student' | 'teacher';
+    type: "student" | "teacher";
   };
 }
 
@@ -57,6 +59,20 @@ interface AttendanceRecord {
   teacherLastName: string;
 }
 
+// Reads the token from localStorage and builds the axios config.
+// Strips quotes if the token was saved with JSON.stringify, and
+// never sends "Bearer null" / "Bearer undefined".
+const getAuthConfig = () => {
+  const raw = localStorage.getItem("token");
+  const token =
+    raw && raw !== "null" && raw !== "undefined" ? raw.replace(/^"|"$/g, "") : null;
+
+  return {
+    withCredentials: true,
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  };
+};
+
 export const TeacherDashboard = ({ user }: TeacherDashboardProps) => {
   const [headcount, setHeadcount] = useState("");
   const [generatedCode, setGeneratedCode] = useState("");
@@ -66,7 +82,6 @@ export const TeacherDashboard = ({ user }: TeacherDashboardProps) => {
   const [editingAttendance, setEditingAttendance] = useState<string | null>(null);
   const [timeRemaining, setTimeRemaining] = useState(0);
 
-  
   const [detailes, setdetailes] = useState<AttendanceRecord[]>([]);
   const [search, setSearch] = useState("");
 
@@ -76,7 +91,7 @@ export const TeacherDashboard = ({ user }: TeacherDashboardProps) => {
 
   const subjectsByYear: Record<string, string[]> = {
     "3rd": ["Software Engineering", "Object-Oriented Programming", "Operating Systems", "Computer Networks"],
-    "4th": ["Machine Learning", "Cloud Computing", "Cybersecurity", "Data Analytics"]
+    "4th": ["Machine Learning", "Cloud Computing", "Cybersecurity", "Data Analytics"],
   };
 
   const getSubjectsForClass = (className: string): string[] => {
@@ -96,8 +111,8 @@ export const TeacherDashboard = ({ user }: TeacherDashboardProps) => {
         phone: "+91 8240400772",
         overall: 92,
         subjectwise: 95,
-        status: "excellent"
-      }
+        status: "excellent",
+      },
     ],
     "IT-B 3rd Year": [
       {
@@ -109,8 +124,8 @@ export const TeacherDashboard = ({ user }: TeacherDashboardProps) => {
         phone: "+91 8240400772",
         overall: 78,
         subjectwise: 82,
-        status: "good"
-      }
+        status: "good",
+      },
     ],
     "IT-A 4th Year": [
       {
@@ -122,8 +137,8 @@ export const TeacherDashboard = ({ user }: TeacherDashboardProps) => {
         phone: "+1 (555) 004-0004",
         overall: 88,
         subjectwise: 90,
-        status: "good"
-      }
+        status: "good",
+      },
     ],
     "IT-B 4th Year": [
       {
@@ -135,35 +150,40 @@ export const TeacherDashboard = ({ user }: TeacherDashboardProps) => {
         phone: "+1 (555) 005-0005",
         overall: 72,
         subjectwise: 69,
-        status: "warning"
-      }
-    ]
+        status: "warning",
+      },
+    ],
   };
 
   const generateTeacherCode = async () => {
-  try {
-    const response = await axios.post(
-      "https://campustracks.onrender.com/api/v1/createteachercode",
-      { headcount: Number(headcount) },
-      {
-        withCredentials: true,
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      }
-    );
-      const teachercode = response.data.data.teachercode;
-      console.log(response);
+    try {
+      const response = await axios.post(
+        `${API_BASE}/createteachercode`,
+        { headcount: Number(headcount) },
+        getAuthConfig()
+      );
 
-      const expiresAt = new Date(Date.now() + 20 * 1000);
+      const teachercode = response.data.data.teachercode;
 
       setGeneratedCode(teachercode);
-      setCodeExpiry(expiresAt);
+      setCodeExpiry(new Date(Date.now() + 20 * 1000));
+      setTimeRemaining(20);
 
       toast({
         title: "Code Generated!",
         description: `Teacher code: ${teachercode}`,
       });
-
     } catch (error: any) {
+      if (error.response?.status === 401) {
+        localStorage.removeItem("token");
+        toast({
+          title: "Session expired",
+          description: "Please log in again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       toast({
         title: "Error",
         description: error.response?.data?.message || error.message,
@@ -172,23 +192,16 @@ export const TeacherDashboard = ({ user }: TeacherDashboardProps) => {
     }
   };
 
-const getdetailes = async function () {
-  try {
-    const response = await axios.get(
-      "https://campustracks.onrender.com/api/v1/getattendance",
-      {
-        withCredentials: true,
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      }
-    );
-    setdetailes(response.data?.data || []);
-    console.log(response);
-  } catch (error) {
-    console.log("failed to fetch the data", error);
-  }
-};
+  const getdetailes = async () => {
+    try {
+      const response = await axios.get(`${API_BASE}/getattendance`, getAuthConfig());
+      setdetailes(response.data?.data || []);
+    } catch (error: any) {
+      console.log("failed to fetch the data", error.response?.data || error.message);
+    }
+  };
 
-  // --- DERIVED LIVE SEARCH RESULTS (No 3rd useState or handler function required) ---
+  // --- Derived live search results ---
   const query = search.trim().toLowerCase();
 
   const searchResults = query
@@ -203,15 +216,19 @@ const getdetailes = async function () {
       })
     : null; // null when the search bar is empty
 
+  // Load attendance once when the dashboard opens
   useEffect(() => {
     getdetailes();
+  }, []);
 
+  // Countdown timer for the generated code
+  useEffect(() => {
     if (!codeExpiry) return;
 
     const timer = setInterval(() => {
-      const now = new Date();
-      const remaining = Math.max(0, codeExpiry.getTime() - now.getTime());
+      const remaining = Math.max(0, codeExpiry.getTime() - Date.now());
       setTimeRemaining(Math.ceil(remaining / 1000));
+
       if (remaining <= 0) {
         setGeneratedCode("");
         setCodeExpiry(null);
@@ -223,6 +240,7 @@ const getdetailes = async function () {
         });
       }
     }, 1000);
+
     return () => clearInterval(timer);
   }, [codeExpiry, toast]);
 
@@ -240,7 +258,7 @@ const getdetailes = async function () {
       default: return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
-  
+
   const getStatusIcon = (status: string) => {
     switch (status.toLowerCase()) {
       case "present": return <CheckCircle className="h-4 w-4 text-green-600" />;
@@ -267,7 +285,6 @@ const getdetailes = async function () {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="container mx-auto max-w-7xl">
-
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">
             Welcome, {user?.firstname} {user?.lastname}!
@@ -333,7 +350,7 @@ const getdetailes = async function () {
             </CardContent>
           </Card>
 
-          {/* --- Student Search Card (Optimized with 2 States) --- */}
+          {/* Student search card */}
           <Card className="shadow-large">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -349,12 +366,12 @@ const getdetailes = async function () {
                 onChange={(e) => setSearch(e.target.value)}
               />
 
-              {/* Show error ONLY when user typed something and search returned 0 matches */}
+              {/* Show error only when the user typed something and nothing matched */}
               {searchResults !== null && searchResults.length === 0 && (
                 <p className="text-sm text-red-600">No attendance found for this student.</p>
               )}
 
-              {/* Display matching results when present */}
+              {/* Matching results */}
               {searchResults && searchResults.length > 0 && (
                 <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
                   <p className="text-sm text-muted-foreground">
@@ -365,13 +382,17 @@ const getdetailes = async function () {
                     ({searchResults[0].rollNo})
                   </p>
                   {searchResults.map((record) => (
-                    <div key={record._id} className="p-3 border rounded-lg flex items-center justify-between">
+                    <div
+                      key={record._id}
+                      className="p-3 border rounded-lg flex items-center justify-between"
+                    >
                       <div>
                         <p className="text-sm">
                           <span className="font-semibold">Date:</span> {formatDate(record.createdAt)}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          Branch: {record.branch} · Marked by: {record.teacherFirstName} {record.teacherLastName}
+                          Branch: {record.branch} · Marked by: {record.teacherFirstName}{" "}
+                          {record.teacherLastName}
                         </p>
                       </div>
                       <Badge className={getStatusColor(record.status)}>
@@ -394,7 +415,9 @@ const getdetailes = async function () {
               </SelectTrigger>
               <SelectContent>
                 {classes.map((cls) => (
-                  <SelectItem key={cls} value={cls}>{cls}</SelectItem>
+                  <SelectItem key={cls} value={cls}>
+                    {cls}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -408,14 +431,16 @@ const getdetailes = async function () {
               </SelectTrigger>
               <SelectContent>
                 {getSubjectsForClass(selectedClass).map((subject) => (
-                  <SelectItem key={subject} value={subject}>{subject}</SelectItem>
+                  <SelectItem key={subject} value={subject}>
+                    {subject}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
         </div>
 
-        {/* Student Table */}
+        {/* Student table */}
         <Card className="shadow-medium">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -464,7 +489,7 @@ const getdetailes = async function () {
                           onClick={() => handleEditAttendance(student.id)}
                         >
                           <Edit3 className="h-3 w-3 mr-1" />
-                          {editingAttendance === student.id ? 'Done' : 'Edit'}
+                          {editingAttendance === student.id ? "Done" : "Edit"}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -478,4 +503,3 @@ const getdetailes = async function () {
     </div>
   );
 };
- 
