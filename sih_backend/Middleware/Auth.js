@@ -11,10 +11,10 @@ exports.isAuthenticated = async (req, res, next) => {
       ? authHeader.split(" ")[1]
       : null;
 
-    // Header first, cookie second, so a stale cookie can't override a fresh token
+   
     const token = clean(headerToken) || clean(req.cookies?.token);
 
-    // TEMPORARY DEBUG: remove once the 401 is solved
+   
     console.log("AUTH DEBUG:", {
       hasHeader: !!clean(headerToken),
       hasCookie: !!clean(req.cookies?.token),
@@ -38,7 +38,9 @@ exports.isAuthenticated = async (req, res, next) => {
       console.log("JWT VERIFY ERROR:", err.name, "-", err.message);
       return res.status(401).json({
         success: false,
-        reason: err.message, // "jwt expired", "invalid signature", "jwt malformed"...
+        reason: err.message, 
+
+    
         message: "Invalid or expired token, please login again",
       });
     }

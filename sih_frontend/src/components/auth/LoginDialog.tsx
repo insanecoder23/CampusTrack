@@ -41,17 +41,12 @@ export const LoginDialog = ({ isOpen, onClose, type, onLogin }: LoginDialogProps
   );
 
   const data = response.data;
-
-  if (!data.success) {
-    throw new Error(data.message);
-  }
-
-  if (!data.user) {
-    throw new Error("User data missing from response. Check backend.");
-  }
-
-  // display info only, the token lives in the httpOnly cookie
-  localStorage.setItem("user", JSON.stringify(data.user));
+if (data.token) {
+  localStorage.setItem("token", data.token);
+} else {
+  console.warn("Login response has no token field, check the backend");
+}
+localStorage.setItem("user", JSON.stringify(data.user));
 
   onLogin({ email: formData.email, type });
 
