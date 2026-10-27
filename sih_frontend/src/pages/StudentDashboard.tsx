@@ -96,7 +96,7 @@ export const StudentDashboard = () => {
     setIsValidating(true);
     try {
       const response = await axios.post(
-        "https://campustracks.onrender.com/verifyteachercode",
+        "https://campustracks.onrender.com/api/v1verifyteachercode",
         { teacherCode },
         { withCredentials: true }
       );
@@ -158,7 +158,7 @@ export const StudentDashboard = () => {
 
     try {
       const respons = await axios.post(
-        "https://campustracks.onrender.com/verifystudentcode",
+        "https://campustracks.onrender.com/api/v1/verifystudentcode",
         { studentcode: studentCode },
         { withCredentials: true }
       );

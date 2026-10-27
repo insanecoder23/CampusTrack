@@ -141,12 +141,15 @@ export const TeacherDashboard = ({ user }: TeacherDashboardProps) => {
   };
 
   const generateTeacherCode = async () => {
-    try {
-      const response = await axios.post(
-        "https://campustracks.onrender.com/api/v1/createteachercode",
-        { headcount },
-        { withCredentials: true }
-      );
+  try {
+    const response = await axios.post(
+      "https://campustracks.onrender.com/api/v1/createteachercode",
+      { headcount: Number(headcount) },
+      {
+        withCredentials: true,
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      }
+    );
       const teachercode = response.data.data.teachercode;
       console.log(response);
 
@@ -169,17 +172,21 @@ export const TeacherDashboard = ({ user }: TeacherDashboardProps) => {
     }
   };
 
-  const getdetailes = async function () {
-    try {
-      const response = await axios.get("https://campustracks.onrender.com/api/v1/getattendance", {
+const getdetailes = async function () {
+  try {
+    const response = await axios.get(
+      "https://campustracks.onrender.com/api/v1/getattendance",
+      {
         withCredentials: true,
-      });
-      setdetailes(response.data?.data || []);
-      console.log(response);
-    } catch (error) {
-      console.log("failed to fetch the data", error);
-    }
-  };
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      }
+    );
+    setdetailes(response.data?.data || []);
+    console.log(response);
+  } catch (error) {
+    console.log("failed to fetch the data", error);
+  }
+};
 
   // --- DERIVED LIVE SEARCH RESULTS (No 3rd useState or handler function required) ---
   const query = search.trim().toLowerCase();

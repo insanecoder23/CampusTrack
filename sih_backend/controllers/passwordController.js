@@ -1,9 +1,8 @@
-const bcrypt = require("bcryptjs");
-const { randomInt, randomBytes } = require("crypto");
+const { randomInt } = require("crypto");
+const bcrypt = require("bcrypt"); 
 const User = require("../models/User");
 const PasswordReset = require("../models/PasswordReset");
 const mailSender = require("../config/MailSender");
-
 
 exports.forgotPassword = async (req, res) => {
   try {
@@ -27,7 +26,7 @@ exports.forgotPassword = async (req, res) => {
         { upsert: true }
       );
 
-      // no await: the email sends in the background
+      // not awaited on purpose: the response is the same whether or not the email exists
       mailSender(
         email,
         "Your password reset OTP",

@@ -124,16 +124,17 @@ exports.Login = async (req, res) => {
         delete userResponse.password;
 
         const option = {
-            expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-            httpOnly: true
-        };
+  expires: new Date(Date.now() + 2 * 60 * 60 * 1000), // matches the 2h JWT
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+};
 
-        return res.cookie("token", token, option).status(200).json({
-            success: true,
-            message: "Login successful",
-            token,
-            user: userResponse
-        });
+return res.cookie("token", token, option).status(200).json({
+  success: true,
+  message: "Login successful",
+  user: userResponse,   
+});
 
     } catch (error) {
         console.log("LOGIN ERROR:", error.message);

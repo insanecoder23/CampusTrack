@@ -32,52 +32,45 @@ export const LoginDialog = ({ isOpen, onClose, type, onLogin }: LoginDialogProps
 
     setIsLoading(true);
 
-    try {
-      const response = await axios.post(
-        "https://campustracks.onrender.com/api/v1/login",
-        {
-          email: formData.email,
-          password: formData.password,
-          accounttype: type,
-        },
-        { withCredentials: true }
-      );
+  
+     try {
+  const response = await axios.post(
+    "https://campustracks.onrender.com/api/v1/login",
+    { email: formData.email, password: formData.password, accounttype: type },
+    { withCredentials: true }
+  );
 
-      const data = response.data;
+  const data = response.data;
 
-      if (!data.success) {
-        throw new Error(data.message);
-      }
+  if (!data.success) {
+    throw new Error(data.message);
+  }
 
-      if (data.user) {
-        localStorage.setItem("user", JSON.stringify(data.user));
-      } else {
-        console.error("No user in response:", data);
-        throw new Error("User data missing from response. Check backend.");
-      }
+  if (!data.user) {
+    throw new Error("User data missing from response. Check backend.");
+  }
 
-      onLogin({ email: formData.email, type });
+  // display info only, the token lives in the httpOnly cookie
+  localStorage.setItem("user", JSON.stringify(data.user));
 
-      toast({ title: "Success", description: `Successfully logged in as ${type}` });
+  onLogin({ email: formData.email, type });
 
-      onClose();
-      setFormData({ email: "", password: "" });
-    } catch (error: unknown) {
-      console.log("FULL ERROR:", error);
-      const description = axios.isAxiosError(error)
-        ? error.response?.data?.message || error.message
-        : error instanceof Error
-        ? error.message
-        : "Invalid credentials. Please try again.";
+  toast({ title: "Success", description: `Successfully logged in as ${type}` });
 
-      toast({
-        title: "Error",
-        description,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+  onClose();
+  setFormData({ email: "", password: "" });
+} catch (error: unknown) {
+  console.log("FULL ERROR:", error);
+  const description = axios.isAxiosError(error)
+    ? error.response?.data?.message || error.message
+    : error instanceof Error
+    ? error.message
+    : "Invalid credentials. Please try again.";
+
+  toast({ title: "Error", description, variant: "destructive" });
+} finally {
+  setIsLoading(false);
+}
   };
 
   const handleChange = (field: string, value: string) => {

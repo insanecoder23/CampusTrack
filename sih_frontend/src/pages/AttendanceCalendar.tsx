@@ -18,7 +18,7 @@ export const AttendanceCalendar = () => {
   const fetchAttendance = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get("http://localhost:3000/api/v1/getattendance", {
+      const response = await axios.get("https://campustracks.onrender.com/api/v1/getattendance", {
         withCredentials: true,
       });
 
