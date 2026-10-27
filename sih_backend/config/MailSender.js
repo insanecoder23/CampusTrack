@@ -13,7 +13,7 @@ const mailSender = async (email, title, body) => {
     const { data, error } = await resend.emails.send({
       from:
         process.env.MAIL_FROM ||
-        "Faizan Student <imadfaiz456@gmail.com>",
+        "Faizan Student <it2023123@rcciit.org.in>",
       to: [email],
       subject: title,
       html: body,
