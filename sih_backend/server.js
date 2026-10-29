@@ -15,6 +15,7 @@ app.set("trust proxy", 1);
 app.use(cors({
   origin: [
     "http://localhost:8080",
+    "https://campus-track-pied.vercel.app"
     
   ],
   credentials: true,
