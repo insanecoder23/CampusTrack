@@ -81,7 +81,7 @@ const data = response.data;
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  // NEW: close the dialog and go to the Forgot Password page
+  
   const handleForgotPassword = () => {
     onClose();
     navigate("/forgot-password");
@@ -95,7 +95,7 @@ const data = response.data;
             {type === 'student' ? <GraduationCap className="h-5 w-5 text-primary" /> : <User className="h-5 w-5 text-secondary" />}
             {type === 'student' ? 'Student Login' : 'Teacher Login'}
           </DialogTitle>
-          <DialogDescription>Enter your {type} ID and password to access your dashboard</DialogDescription>
+          <DialogDescription>Enter your {type} Email Id and password to access your dashboard</DialogDescription>
         </DialogHeader>
 
         <Card className="border-0 shadow-none">
